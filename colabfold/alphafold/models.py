@@ -90,15 +90,15 @@ def load_models_and_params(
 
     if model_order is None:
         model_order = [1, 2, 3, 4, 5]
-    else:
-        model_order.sort()
+    #else:
+    #    model_order.sort()
 
     model_build_order = [3, 4, 5, 1, 2]
     if "multimer" in model_type:
         models_need_compilation = [3]
     else:
         # only models 1,2 use templates
-        models_need_compilation = [1, 3] if use_templates else [3]
+        models_need_compilation = [1, 2] if use_templates else [3]
     
     model_runner_and_params_build_order: [Tuple[str, model.RunModel, haiku.Params]] = []
     model_runner = None

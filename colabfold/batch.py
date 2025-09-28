@@ -1204,7 +1204,7 @@ def run(
         max_extra_seq = max(min(num_seqs - max_seq, max_extra_seq), 1)
 
     # sort model order
-    model_order.sort()
+    #model_order.sort()
 
     # initial guess
     if initial_guess is not None:
