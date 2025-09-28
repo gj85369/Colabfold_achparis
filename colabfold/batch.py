@@ -1608,6 +1608,15 @@ def main():
     )
     parser.add_argument("results", help="Results output directory.")
 
+
+    acpharis_group = parser.add_argument_group("Acpharis", "")
+    acpharis_group.add_argument("--stop_at_score",
+        default='iptm',
+        choices = ['iptm', 'ptm'],
+        help='choose scoring system')
+    acpharis_group.add_argument("--param_names",
+        help="name for params",
+        )
     msa_group = parser.add_argument_group("MSA arguments", "")
     msa_group.add_argument(
         "--msa-only",
