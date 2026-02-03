@@ -1108,6 +1108,7 @@ def run(
     feature_dict_callback: Callable[[Any], Any] = None,
     calc_extra_ptm: bool = False,
     use_probs_extra: bool = True,
+    running_mode: str = 'acpharis', 
     **kwargs
 ):
     # check what device is available
@@ -1204,7 +1205,8 @@ def run(
         max_extra_seq = max(min(num_seqs - max_seq, max_extra_seq), 1)
 
     # sort model order
-    #model_order.sort()
+    if running_mode != 'acpharis':
+        model_order.sort()
 
     # initial guess
     if initial_guess is not None:
@@ -1407,6 +1409,7 @@ def run(
                         logger.info(f"Setting max_seq={max_seq}, max_extra_seq={max_extra_seq}")
 
                     model_runner_and_params = load_models_and_params(
+                        running_mode=running_mode,
                         num_models=num_models,
                         use_templates=use_templates,
                         num_recycles=num_recycles,
@@ -1610,6 +1613,10 @@ def main():
 
 
     acpharis_group = parser.add_argument_group("Acpharis", "")
+    acpharis_group.add_argument("--running_mode", 
+        default="acpharis", 
+        choices = ["acpharis", "base"],
+        help="choose the running mode")
     acpharis_group.add_argument("--stop_at_score",
         default='iptm',
         choices = ['iptm', 'ptm'],
@@ -1993,6 +2000,8 @@ def main():
     else:
         initial_guess = None
 
+
+    running_mode = args.running_mode
     if args.msa_only:
         args.num_models = 0
 
@@ -2079,6 +2088,7 @@ def main():
         save_recycles=args.save_recycles,
         calc_extra_ptm=args.calc_extra_ptm,
         use_probs_extra=use_probs_extra,
+        running_mode=running_mode,
     )
 
 if __name__ == "__main__":

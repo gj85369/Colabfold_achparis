@@ -59,6 +59,7 @@ def model_to_config_name(model_type: str, model_number: str) -> str:
 
 
 def load_models_and_params(
+    running_mode:str = "acpharis",
     num_models: int,
     use_templates: bool,
     num_recycles: Optional[int] = None,
@@ -90,8 +91,10 @@ def load_models_and_params(
 
     if model_order is None:
         model_order = [1, 2, 3, 4, 5]
-    #else:
-    #    model_order.sort()
+    else:
+        if running_mode != 'acpharis':
+
+            model_order.sort()  
 
     model_build_order = [3, 4, 5, 1, 2]
     if "multimer" in model_type:
