@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from io import StringIO
 
+
+from msa_gen import msa_create
 import importlib_metadata
 import numpy as np
 
@@ -338,6 +340,9 @@ def predict_structure(
     save_recycles: bool = False,
     calc_extra_ptm: bool = False,
     use_probs_extra: bool = True,
+    param_name: str = None,
+    running_mode: str = None,
+
 ):
     """Predicts structure using AlphaFold for the given sequence."""
     mean_scores = []
@@ -445,7 +450,13 @@ def predict_structure(
             ########################
 
             # summary metrics
-            mean_scores.append(result["ranking_confidence"])
+            mnapp = None
+            if running_mode == 'acpharis' && is_complex:
+                mnapp = result['iptm']
+            else:
+                mnapp = result['ranking_confidence']
+            mean_scores.append(mnapp)
+
             if recycles == 0: result.pop("tol",None)
             if not is_complex: result.pop("iptm",None)
             print_line = ""
@@ -1088,6 +1099,7 @@ def run(
     user_agent: str = "",
     random_seed: int = 0,
     num_seeds: int = 1,
+    stop_at_score: float = 100,    
     recompile_padding: Union[int, float] = 10,
     zip_results: bool = False,
     prediction_callback: Callable[[Any, Any, Any, Any, Any], Any] = None,
@@ -1098,7 +1110,6 @@ def run(
     save_recycles: bool = False,
     use_dropout: bool = False,
     use_gpu_relax: bool = False,
-    stop_at_score: float = 100,
     dpi: int = 200,
     max_seq: Optional[int] = None,
     max_extra_seq: Optional[int] = None,
@@ -1108,6 +1119,7 @@ def run(
     feature_dict_callback: Callable[[Any], Any] = None,
     calc_extra_ptm: bool = False,
     use_probs_extra: bool = True,
+    param_name: str = None,    
     running_mode: str = 'acpharis', 
     **kwargs
 ):
@@ -1459,6 +1471,8 @@ def run(
                     save_recycles=save_recycles,
                     calc_extra_ptm=calc_extra_ptm,
                     use_probs_extra=use_probs_extra,
+                    param_name=param_name,
+                    running_mode=running_mode,
                 )
                 
                 result_files += results["result_files"]
@@ -1617,13 +1631,21 @@ def main():
         default="acpharis", 
         choices = ["acpharis", "base"],
         help="choose the running mode")
-    acpharis_group.add_argument("--stop_at_score",
+    acpharis_group.add_argument("--stop-at-score",
         default='iptm',
         choices = ['iptm', 'ptm'],
-        help='choose scoring system')
-    acpharis_group.add_argument("--param_names",
+        help='choose scoring system')    
+    acpharis_group.add_argument("--param-names",
         help="name for params",
         )
+    acpharis_group.add_argument("--custom-db",
+        action="store_true",        
+        help="use custom dbs",
+        )
+    acpharis_group.add_argument("--db-name",
+        default = '',
+        help="custom db name",
+        )            
     msa_group = parser.add_argument_group("MSA arguments", "")
     msa_group.add_argument(
         "--msa-only",
@@ -2004,7 +2026,21 @@ def main():
     running_mode = args.running_mode
     if args.msa_only:
         args.num_models = 0
+    if args.custom_db:
+        if args.custom_name == "":
+            raise ValueError("please provide a db name")
+        get_msas  = msa_create('hi')
+        get_msas.hhmer_binary_path = self.jackhmmer
+        get_msas.easl_path = self.easl_path
+        get_msas.hhblits_binary_path=self.jackhmmer
+        get_msas.output_path = self.output_dir
+        get_msas.seq_dict = self.query_dict
+        get_msas.db_root_path = self.db_root_path
+        get_msas.init_db_list()
+        get_msas.init_db_configs()
+        mod_msas = get_msas.get_MSAs_std()
 
+            ## make check to see it exists
     if args.num_models > 0:
         download_alphafold_params(model_type, data_dir)
 
@@ -2070,7 +2106,7 @@ def main():
         user_agent=user_agent,
         random_seed=args.random_seed,
         num_seeds=args.num_seeds,
-        stop_at_score=args.stop_at_score,
+        stop_at_score=args.stop_at_score,        
         recompile_padding=args.recompile_padding,
         zip_results=args.zip,
         save_single_representations=args.save_single_representations,
@@ -2088,7 +2124,10 @@ def main():
         save_recycles=args.save_recycles,
         calc_extra_ptm=args.calc_extra_ptm,
         use_probs_extra=use_probs_extra,
+        param_name=args.param_name,         
         running_mode=running_mode,
+        custom_db=args.custom_db,
+        custom_name=args.custom_name,               
     )
 
 if __name__ == "__main__":

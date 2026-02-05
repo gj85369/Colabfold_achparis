@@ -97,12 +97,19 @@ def load_models_and_params(
             model_order.sort()  
 
     model_build_order = [3, 4, 5, 1, 2]
-    if "multimer" in model_type:
-        models_need_compilation = [3]
+
+    if running_mode != 'acpharis':
+        if model_order is not None:
+            model_build_order = model_order
+    if running_mode != 'acpharis':
+        if "multimer" in model_type:
+            models_need_compilation = [3]
+        else:
+            # only models 1,2 use templates
+            models_need_compilation = [1, 2] if use_templates else [3]
     else:
-        # only models 1,2 use templates
-        models_need_compilation = [1, 2] if use_templates else [3]
-    
+        models_need_compilation = model_build_order
+        
     model_runner_and_params_build_order: [Tuple[str, model.RunModel, haiku.Params]] = []
     model_runner = None
     for model_number in model_build_order:
