@@ -98,7 +98,7 @@ def load_models_and_params(
 
     model_build_order = [3, 4, 5, 1, 2]
 
-    if running_mode != 'acpharis':
+    if running_mode == 'acpharis':
         if model_order is not None:
             model_build_order = model_order
     if running_mode != 'acpharis':
@@ -109,7 +109,7 @@ def load_models_and_params(
             models_need_compilation = [1, 2] if use_templates else [3]
     else:
         models_need_compilation = model_build_order
-        
+
     model_runner_and_params_build_order: [Tuple[str, model.RunModel, haiku.Params]] = []
     model_runner = None
     for model_number in model_build_order:

@@ -451,7 +451,7 @@ def predict_structure(
 
             # summary metrics
             mnapp = None
-            if running_mode == 'acpharis' && is_complex:
+            if running_mode == 'acpharis' and is_complex:
                 mnapp = result['iptm']
             else:
                 mnapp = result['ranking_confidence']
